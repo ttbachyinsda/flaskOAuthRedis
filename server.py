@@ -6,8 +6,10 @@
 
 """
 from flask import Flask, request, g, session, redirect, url_for
-from flask import render_template
+from flask import render_template, render_template_string
 from flask_github import GitHub
+import redis
+import json
 
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -123,6 +125,81 @@ def user():
     text = github.get('user')
     return render_template('useremail.html', currentemail = text['email'])
 
+
+@app.route('/search')
+def search():
+    value = request.args.get('subject','')
+    subject = value
+    if (subject == ''):
+        return render_template_string('Wrong paramenters')
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    s = str(r.get('##subject##'+subject))
+    s = s.replace("\\'", "'")
+    s = s[2:-1]
+    list = json.loads(s)
+    res = []
+    for author in list.keys():
+        res.append((float(list[author]), author))
+    res = sorted(res, key = lambda e:e[0], reverse=True)
+    html = ""
+    for element in res:
+        d = str(r.get('##authordataof##' + str(element[1])))
+        d = d[2:-1]
+        d = d.replace("\\'", "'")
+        list = json.loads(d)
+        name = list['name']
+        hi = list['hi']
+        html += '<a href="/getinfo?index='+str(element[1])+'">'+name+'    hi = '+str(hi)+'<br></a>'
+
+    return render_template_string(html)
+
+
+@app.route('/getinfo')
+def getinfo():
+    index = request.args.get('index','')
+    if (index == ''):
+        return render_template_string('Wrong paramenters')
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    d = str(r.get('##authordataof##' + str(index)))
+    d = d[2:-1]
+    d = d.replace("\\'", "'")
+    list = json.loads(d)
+    name = list['name']
+    af = list['af']
+    pc = list['pc']
+    cn = list['cn']
+    hi = list['hi']
+    pi = list['pi']
+    upi = list['upi']
+    t = list['t']
+    s = str(r.get('##coauthorof##' + str(index)))
+    s = s[2:-1]
+    s = s.replace("\\'", "'")
+    list = json.loads(s)
+    html = ""
+    html += 'index = '+str(index)+'<br>'
+    html += 'name = '+str(name)+'<br>'
+    html += 'affiliations = '+str(af)+'<br>'
+    html += 'the count of published papers of this author = '+str(pc)+'<br>'
+    html += 'the total number of citations of this author = '+str(cn)+'<br>'
+    html += 'the H-index of this author = '+str(hi)+'<br>'
+    html += 'the P-index with equal A-index of this author = '+str(pi)+'<br>'
+    html += 'the P-index with unequal A-index of this author = '+str(upi)+'<br>'
+    html += 'research interests of this author = '+str(t)+'<br>'
+    html += 'coauthor of '+str(name)+' is :<br>'
+    res = []
+    for element in list.keys():
+        res.append((int(list[element]),element))
+    res = sorted(res, key = lambda e:e[0], reverse = True)
+    for element in res:
+        author = int(element[1])
+        d = str(r.get('##authordataof##' + str(author)))
+        d = d[2:-1]
+        d = d.replace("\\'", "'")
+        list = json.loads(d)
+        html += list['name'] + ' cooperate time : '+str(element[0])+'<br>'
+
+    return render_template_string(html)
 
 if __name__ == '__main__':
     init_db()
