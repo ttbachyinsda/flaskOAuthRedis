@@ -71,12 +71,9 @@ def after_request(response):
 
 @app.route('/')
 def index():
-    print('abcdefg')
     if g.user:
-        print('hadoop')
         return render_template('user2.html')
     else:
-        print('hadoopp')
         return render_template('logined.html')
 
 
@@ -116,7 +113,6 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    print('logout complete')
     return redirect(url_for('index'))
 
 
@@ -203,4 +199,4 @@ def getinfo():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=80)
