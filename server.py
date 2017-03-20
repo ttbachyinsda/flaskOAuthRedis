@@ -1,10 +1,3 @@
-"""
-    GitHub Example
-    --------------
-
-    Shows how to authorize users with Github.
-
-"""
 from flask import Flask, request, g, session, redirect, url_for
 from flask import render_template, render_template_string
 from flask_github import GitHub
@@ -130,7 +123,10 @@ def search():
         return render_template_string('Wrong paramenters')
     r = redis.Redis(host='127.0.0.1', port=6379)
     s = str(r.get('##subject##'+subject))
+    if (s == 'None'):
+        return render_template_string('domain not found')
     s = s.replace("\\'", "'")
+
     s = s[2:-1]
     list = json.loads(s)
     res = []
@@ -150,6 +146,78 @@ def search():
     return render_template_string(html)
 
 
+@app.route('/expert_finding')
+def expert_finding():
+    value = request.args.get('domain','')
+    subject = value
+    if (subject == ''):
+        return json.dumps([])
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    s = str(r.get('##subject##' + subject))
+    if (s == 'None'):
+        return json.dumps([])
+    s = s.replace("\\'", "'")
+    s = s[2:-1]
+    list = json.loads(s)
+    res = []
+    for author in list.keys():
+        res.append((float(list[author]), author))
+    res = sorted(res, key=lambda e: e[0], reverse=True)
+    result = []
+    for element in res:
+        d = str(r.get('##authordataof##' + str(element[1])))
+        d = d[2:-1]
+        d = d.replace("\\'", "'")
+        list = json.loads(d)
+        name = list['name']
+        hi = list['hi']
+        result.append(name)
+
+    return json.dumps(result)
+
+
+@app.route('/coauthors')
+def getcoauthors():
+    index = request.args.get('author', '')
+    if (index == ''):
+        return json.dumps([])
+    r = redis.Redis(host='127.0.0.1', port=6379)
+    d = str(r.get('##authordataof##' + str(index)))
+    if (d == 'None'):
+        return json.dumps([])
+    d = d[2:-1]
+    d = d.replace("\\'", "'")
+    list = json.loads(d)
+    name = list['name']
+    af = list['af']
+    pc = list['pc']
+    cn = list['cn']
+    hi = list['hi']
+    pi = list['pi']
+    upi = list['upi']
+    t = list['t']
+    s = str(r.get('##coauthorof##' + str(index)))
+    s = s[2:-1]
+    s = s.replace("\\'", "'")
+    list = json.loads(s)
+    res = []
+    for element in list.keys():
+        res.append((int(list[element]), element))
+    res = sorted(res, key=lambda e: e[0], reverse=True)
+
+    result = []
+
+    for element in res:
+        author = int(element[1])
+        d = str(r.get('##authordataof##' + str(author)))
+        d = d[2:-1]
+        d = d.replace("\\'", "'")
+        list = json.loads(d)
+        result.append(list['name'])
+
+    return json.dumps(result)
+
+
 @app.route('/getinfo')
 def getinfo():
     index = request.args.get('index','')
@@ -157,6 +225,8 @@ def getinfo():
         return render_template_string('Wrong paramenters')
     r = redis.Redis(host='127.0.0.1', port=6379)
     d = str(r.get('##authordataof##' + str(index)))
+    if (d == 'None'):
+        return render_template_string('Wrong paramenters')
     d = d[2:-1]
     d = d.replace("\\'", "'")
     list = json.loads(d)
