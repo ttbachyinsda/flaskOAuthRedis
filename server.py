@@ -197,6 +197,8 @@ def getcoauthors():
     upi = list['upi']
     t = list['t']
     s = str(r.get('##coauthorof##' + str(index)))
+    if (s == 'None'):
+        return json.dumps([])
     s = s[2:-1]
     s = s.replace("\\'", "'")
     list = json.loads(s)
@@ -226,7 +228,7 @@ def getinfo():
     r = redis.Redis(host='127.0.0.1', port=6379)
     d = str(r.get('##authordataof##' + str(index)))
     if (d == 'None'):
-        return render_template_string('Wrong paramenters')
+        return render_template_string('No Coauthors')
     d = d[2:-1]
     d = d.replace("\\'", "'")
     list = json.loads(d)
@@ -239,6 +241,8 @@ def getinfo():
     upi = list['upi']
     t = list['t']
     s = str(r.get('##coauthorof##' + str(index)))
+    if (s == 'None'):
+        return render_template_string('No Coauthors')
     s = s[2:-1]
     s = s.replace("\\'", "'")
     list = json.loads(s)
