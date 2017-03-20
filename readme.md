@@ -38,11 +38,14 @@ Powered By 计43 郭昉泽
 
 3. 链接
 
-   请访问http://ttbweb5511.cloudapp.net/进行测试。
+   请访问
+http://ttbweb5511.cloudapp.net/
+进行测试。
 
 4. API接口（1）
 
-   http://ttbweb5511.cloudapp.net/expert_finding?domain=要查询的domain，来查询一个domain对应的expert。返回一个json array数组，以H-index排序。例如：
+   http://ttbweb5511.cloudapp.net/expert_finding?domain=
+要查询的domain，来查询一个domain对应的expert。返回一个json array数组，以H-index排序。例如：
 
    http://ttbweb5511.cloudapp.net/expert_finding?domain=Mountainous+Area
 
@@ -52,7 +55,8 @@ Powered By 计43 郭昉泽
 
 5. API接口（2）
 
-   http://ttbweb5511.cloudapp.net/coauthors?author=要查询的author的id，来查询一个author对应的coauthor。返回一个json array数组，以合作次数排序。例如：
+   http://ttbweb5511.cloudapp.net/coauthors?author=
+要查询的author的id，来查询一个author对应的coauthor。返回一个json array数组，以合作次数排序。例如：
 
    http://ttbweb5511.cloudapp.net/coauthors?author=12345
 
